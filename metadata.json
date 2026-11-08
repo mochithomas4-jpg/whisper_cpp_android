@@ -1,0 +1,6 @@
+{
+  "name": "Whisper SRT",
+  "description": "On-device real-time audio file and microphone speech transcription to text and SRT subtitles powered by Whisper.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
