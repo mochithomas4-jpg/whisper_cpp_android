@@ -165,32 +165,6 @@ app/build/outputs/apk/debug/app-debug.apk
 
 ---
 
-## 📤 Cara Upload / Push ke GitHub
-
-### Opsi A: Melalui Fitur Bawaan AI Studio (Paling Mudah)
-1. Di pojok kanan atas antarmuka Google AI Studio, klik menu **Settings** atau **Export**.
-2. Pilih **Push to GitHub** / **Export to GitHub Repository**.
-3. Otorisasikan akun GitHub Anda dan pilih/buat nama repositori yang diinginkan.
-4. Kode akan otomatis diunggah langsung ke akun GitHub Anda.
-
-### Opsi B: Melalui Git CLI (Terminal)
-Jika Anda memiliki personal access token (PAT) atau SSH key di akun GitHub:
-```bash
-# Tambahkan remote repositori GitHub Anda
-git remote add origin https://github.com/USERNAME_ANDA/NAMA_REPO.git
-
-# Pastikan branch utama bernama main
-git branch -M main
-
-# Tambahkan seluruh berkas dan lakukan commit
-git add .
-git commit -m "feat: initial release of Whisper SRT Android app with on-device transcription"
-
-# Push ke repositori GitHub Anda
-git push -u origin main
-```
-
----
 
 ## 📄 Lisensi & Atribusi
 
