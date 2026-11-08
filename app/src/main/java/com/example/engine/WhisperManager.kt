@@ -54,28 +54,24 @@ class WhisperManager(private val context: Context) {
         }
     }
 
+    val hardwareInfo: HardwareDeviceInfo by lazy {
+        GpuHardwareDetector.detectHardware(context)
+    }
+
     fun isGpuAvailable(): Boolean {
-        return try {
-            Whisper.isOpenClAvailable() || Whisper.isVulkanBackendAvailable()
-        } catch (_: Exception) {
-            false
-        }
+        return hardwareInfo.isVulkanSupported || hardwareInfo.isOpenClSupported
     }
 
     fun isVulkanAvailable(): Boolean {
-        return try {
-            Whisper.isVulkanBackendAvailable()
-        } catch (_: Exception) {
-            false
-        }
+        return hardwareInfo.isVulkanSupported
     }
 
     fun isOpenClAvailable(): Boolean {
-        return try {
-            Whisper.isOpenClAvailable()
-        } catch (_: Exception) {
-            false
-        }
+        return hardwareInfo.isOpenClSupported
+    }
+
+    fun isNpuAvailable(): Boolean {
+        return hardwareInfo.isNpuSupported
     }
 
     suspend fun downloadPresetModel(
@@ -182,6 +178,22 @@ class WhisperManager(private val context: Context) {
         return file.exists() && file.delete()
     }
 
+    private fun applyBackendAvailabilityOverride(openCl: Boolean?, vulkan: Boolean?) {
+        try {
+            val clazz = Class.forName("io.aatricks.llmedge.speech.stt.WhisperRuntimeSupport")
+            val instanceField = clazz.getField("INSTANCE")
+            val instance = instanceField.get(null)
+            val method = clazz.getMethod(
+                "overrideBackendAvailabilityForTests",
+                java.lang.Boolean::class.java,
+                java.lang.Boolean::class.java
+            )
+            method.invoke(instance, openCl, vulkan)
+        } catch (e: Throwable) {
+            Log.w(TAG, "Gagal mengatur backend override: ${e.message}")
+        }
+    }
+
     suspend fun loadModel(
         filePath: String,
         settings: WhisperSettings = WhisperSettings()
@@ -201,7 +213,20 @@ class WhisperManager(private val context: Context) {
         val nThreads = settings.threadCount.coerceIn(1, 16)
         val flashAttn = settings.flashAttention
 
-        Log.i(TAG, "Memuat model Whisper: $filePath (device=${settings.computeDevice}, threads=$nThreads, flashAttn=$flashAttn)")
+        // Apply driver overrides for Whisper runtime backend resolution
+        if (useGpu) {
+            applyBackendAvailabilityOverride(
+                openCl = hardwareInfo.isOpenClSupported,
+                vulkan = hardwareInfo.isVulkanSupported
+            )
+        } else {
+            applyBackendAvailabilityOverride(
+                openCl = false,
+                vulkan = false
+            )
+        }
+
+        Log.i(TAG, "Memuat model Whisper: $filePath (device=${settings.computeDevice}, threads=$nThreads, flashAttn=$flashAttn, openCl=${hardwareInfo.isOpenClSupported}, vulkan=${hardwareInfo.isVulkanSupported})")
 
         val whisper = try {
             Whisper.load(
@@ -213,6 +238,10 @@ class WhisperManager(private val context: Context) {
         } catch (e: Exception) {
             if (useGpu) {
                 Log.w(TAG, "Gagal memuat dengan GPU/NPU (${e.message}), beralih ke mode CPU aman...")
+                applyBackendAvailabilityOverride(
+                    openCl = false,
+                    vulkan = false
+                )
                 Whisper.load(
                     filePath,
                     false,

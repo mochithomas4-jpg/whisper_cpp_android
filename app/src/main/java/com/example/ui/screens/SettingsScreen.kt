@@ -144,8 +144,21 @@ fun SettingsScreen(
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 14.sp
                                 )
+                                val subtitleText = when (device) {
+                                    ComputeDevice.CPU -> "Multi-core CPU (${viewModel.availableProcessors} Cores ${Build.SUPPORTED_ABIS.firstOrNull() ?: "ARM"})"
+                                    ComputeDevice.GPU -> if (viewModel.isGpuAvailable) {
+                                        "GPU ${viewModel.hardwareInfo.gpuRenderer} (Vulkan / OpenCL)"
+                                    } else {
+                                        device.subtitle
+                                    }
+                                    ComputeDevice.NPU -> if (viewModel.isNpuAvailable) {
+                                        viewModel.hardwareInfo.npuDetails
+                                    } else {
+                                        device.subtitle
+                                    }
+                                }
                                 Text(
-                                    text = device.subtitle,
+                                    text = subtitleText,
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -376,18 +389,25 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 HardwareInfoRow("Perangkat", "${Build.MANUFACTURER.capitalize()} ${Build.MODEL}")
+                HardwareInfoRow("SoC / Chipset", viewModel.hardwareInfo.chipset)
+                HardwareInfoRow("GPU Renderer", viewModel.hardwareInfo.gpuRenderer)
+                HardwareInfoRow("Vendor GPU", viewModel.hardwareInfo.gpuVendor)
+                HardwareInfoRow("Core Prosesor", "${viewModel.availableProcessors} Cores (${Build.SUPPORTED_ABIS.firstOrNull() ?: "arm64-v8a"})")
                 HardwareInfoRow("Android", "Versi ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})")
-                HardwareInfoRow("Arsitektur CPU", Build.SUPPORTED_ABIS.firstOrNull() ?: "arm64-v8a")
-                HardwareInfoRow("Core Prosesor", "${viewModel.availableProcessors} Cores")
                 HardwareInfoRow(
-                    label = "Dukungan Vulkan GPU",
-                    value = if (viewModel.isVulkanAvailable) "Tersedia" else "Tidak Terdeteksi",
+                    label = "Driver Vulkan",
+                    value = viewModel.hardwareInfo.vulkanVersionString,
                     isSuccess = viewModel.isVulkanAvailable
                 )
                 HardwareInfoRow(
-                    label = "Dukungan OpenCL GPU",
-                    value = if (viewModel.isOpenClAvailable) "Tersedia" else "Tidak Terdeteksi",
+                    label = "Driver OpenCL",
+                    value = viewModel.hardwareInfo.openClDetails,
                     isSuccess = viewModel.isOpenClAvailable
+                )
+                HardwareInfoRow(
+                    label = "Akselerator NPU",
+                    value = viewModel.hardwareInfo.npuDetails,
+                    isSuccess = viewModel.isNpuAvailable
                 )
                 HardwareInfoRow("Engine STT", "whisper.cpp JNI Native (Offline)")
             }

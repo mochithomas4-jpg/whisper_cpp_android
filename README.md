@@ -43,6 +43,13 @@ Aplikasi menyediakan 30 pilihan model Whisper resmi dari Hugging Face yang dapat
   - **CPU (Multi-Core ARM)**: Eksekusi universal dan stabil di semua chipset.
   - **GPU (OpenCL / Vulkan)**: Akselerasi kartu grafis hardware untuk waktu inferensi lebih singkat.
   - **NPU / Neural Engine**: Unit pemrosesan neural tensor akselerator.
+- **Deteksi Hardware & Driver GPU Presisi Tinggi**:
+  - Dilengkapi engine `GpuHardwareDetector` yang secara langsung mengueri offscreen EGL/OpenGL ES surface dan Android system features.
+  - Mendeteksi GPU Renderer & Vendor asli (misal **ARM Mali-G68 MC4**, Adreno, PowerVR).
+  - Mendeteksi versi spesifik driver **Vulkan** (Vulkan 1.1 / 1.2 / 1.3 dan hardware level).
+  - Melakukan probing langsung berkas driver **OpenCL** vendor (`/vendor/lib64/libOpenCL.so`, `/vendor/lib64/egl/libGLES_mali.so`, dsb).
+  - Mendeteksi SoC/Chipset (misal **MediaTek Dimensity 1080 / MT6877**, Snapdragon) dan unit **NPU/APU** (MediaTek APU 3.0 NeuroPilot / Android NNAPI).
+  - Menghubungkan availability override ke runtime Whisper sehingga backend grafis aktif tanpa terblokir stub library.
 - **Jumlah Thread Prosesor**: Slider untuk mengatur thread CPU (1 hingga 16 threads, dengan preset hemat daya, optimal, atau maksimal).
 - **Flash Attention**: Optimasi self-attention untuk kecepatan transkripsi lebih tinggi dan efisiensi memori RAM.
 - **Token Timestamps**: Perhitungan penanda waktu level kata untuk akurasi subtitle yang presisi.

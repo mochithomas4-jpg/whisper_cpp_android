@@ -62,9 +62,11 @@ class WhisperViewModel(application: Application) : AndroidViewModel(application)
     val settings: StateFlow<WhisperSettings> = _settings.asStateFlow()
 
     val availableProcessors: Int = Runtime.getRuntime().availableProcessors()
+    val hardwareInfo = whisperManager.hardwareInfo
     val isGpuAvailable: Boolean = whisperManager.isGpuAvailable()
     val isVulkanAvailable: Boolean = whisperManager.isVulkanAvailable()
     val isOpenClAvailable: Boolean = whisperManager.isOpenClAvailable()
+    val isNpuAvailable: Boolean = whisperManager.isNpuAvailable()
 
     // Models State
     private val _localModels = MutableStateFlow<List<LocalModelItem>>(emptyList())
